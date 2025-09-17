@@ -3,16 +3,20 @@ package main
 import (
 	"net/http"
 
-	"github.com/gorilla/handlers"
-	"github.com/joho/godotenv"
-	"github.com/sirupsen/logrus"
-
 	"github.com/danielgalindoj/auth-service/internal/adapters/database/postgres"
 	"github.com/danielgalindoj/auth-service/internal/adapters/http/routes"
 	"github.com/danielgalindoj/auth-service/internal/config"
 	"github.com/danielgalindoj/auth-service/internal/core/services"
+	"github.com/gorilla/handlers"
+	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 )
 
+// @title Auth Service API
+// @version 1.0.0
+// @description API Documentation for Auth Service
+// @host localhost:9148
+// @BasePath /auth-service/api
 func main() {
 	// Cargar variables de entorno
 	if err := godotenv.Load(); err != nil {
@@ -70,6 +74,7 @@ func main() {
 	if err := http.ListenAndServe(":"+cfg.Port, corsHandler); err != nil {
 		logrus.Fatal("Error iniciando servidor: ", err)
 	}
+
 }
 
 func setupLogger(level, format string) {

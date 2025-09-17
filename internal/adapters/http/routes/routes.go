@@ -11,6 +11,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// SetupRoutes configura todas las rutas de la API.
+// @title Auth Service API
+// @version 1.0
+// @description 🔐 Servicio de autenticación y gestión de usuarios.
+// @host localhost:8080
+// @BasePath /api/v1
+// @schemes http
 func SetupRoutes(authService *services.AuthService, userService *services.UserService, config *config.Config) *mux.Router {
 	r := mux.NewRouter()
 
@@ -25,24 +32,102 @@ func SetupRoutes(authService *services.AuthService, userService *services.UserSe
 	api := r.PathPrefix("/api/" + config.APIVersion).Subrouter()
 
 	// Ruta de salud
+	// @Summary Verifica estado del servicio
+	// @Description Retorna estado, versión y timestamp del servicio.
+	// @Tags Health
+	// @Produce json
+	// @Success 200 {object} map[string]interface{}
+	// @Router /health [get]
 	r.HandleFunc("/health", healthCheck).Methods("GET")
+
+	// @Summary Página principal
+	// @Description Información general del Auth Service.
+	// @Tags Health
+	// @Produce plain
+	// @Success 200 {string} string "Información del servicio"
+	// @Router / [get]
 	r.HandleFunc("/", homeHandler).Methods("GET")
 
 	// Rutas de autenticación (públicas)
 	auth := api.PathPrefix("/auth").Subrouter()
+
+	// @Summary Registrar usuario
+	// @Tags Auth
+	// @Accept json
+	// @Produce json
+	// @Param data body map[string]string true "Email y Password"
+	// @Success 201 {object} map[string]string
+	// @Failure 400 {object} map[string]string
+	// @Router /auth/register [post]
 	auth.HandleFunc("/register", authHandler.Register).Methods("POST")
+
+	// @Summary Login de usuario
+	// @Tags Auth
+	// @Accept json
+	// @Produce json
+	// @Param data body map[string]string true "Email y Password"
+	// @Success 200 {object} map[string]interface{}
+	// @Failure 401 {object} map[string]string
+	// @Router /auth/login [post]
 	auth.HandleFunc("/login", authHandler.Login).Methods("POST")
+
+	// @Summary Refrescar token
+	// @Tags Auth
+	// @Accept json
+	// @Produce json
+	// @Param data body map[string]string true "Refresh token"
+	// @Success 200 {object} map[string]interface{}
+	// @Failure 401 {object} map[string]string
+	// @Router /auth/refresh [post]
 	auth.HandleFunc("/refresh", authHandler.RefreshToken).Methods("POST")
 
-	// Rutas protegidas (requieren JWT)
+	// Rutas protegidas
 	protected := api.PathPrefix("/").Subrouter()
 	protected.Use(authMiddleware)
 
 	// Rutas de usuario
 	users := protected.PathPrefix("/users").Subrouter()
+
+	// @Summary Ver perfil del usuario autenticado
+	// @Tags Users
+	// @Security BearerAuth
+	// @Produce json
+	// @Success 200 {object} map[string]interface{}
+	// @Failure 401 {object} map[string]string
+	// @Router /users/profile [get]
 	users.HandleFunc("/profile", userHandler.GetProfile).Methods("GET")
+
+	// @Summary Actualizar perfil del usuario autenticado
+	// @Tags Users
+	// @Security BearerAuth
+	// @Accept json
+	// @Produce json
+	// @Param data body map[string]string true "Datos de perfil"
+	// @Success 200 {object} map[string]string
+	// @Failure 401 {object} map[string]string
+	// @Router /users/profile [put]
 	users.HandleFunc("/profile", userHandler.UpdateProfile).Methods("PUT")
+
+	// @Summary Listar usuarios
+	// @Tags Users
+	// @Security BearerAuth
+	// @Produce json
+	// @Param page query int false "Número de página"
+	// @Param limit query int false "Resultados por página"
+	// @Success 200 {object} map[string]interface{}
+	// @Failure 401 {object} map[string]string
+	// @Router /users [get]
 	users.HandleFunc("", userHandler.ListUsers).Methods("GET")
+
+	// @Summary Obtener usuario por ID
+	// @Tags Users
+	// @Security BearerAuth
+	// @Produce json
+	// @Param id path string true "ID del usuario"
+	// @Success 200 {object} map[string]interface{}
+	// @Failure 404 {object} map[string]string
+	// @Failure 401 {object} map[string]string
+	// @Router /users/{id} [get]
 	users.HandleFunc("/{id}", userHandler.GetUser).Methods("GET")
 
 	return r
@@ -61,41 +146,7 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	info := `
-🔐 Auth Service API
-
-Endpoints disponibles:
-
-PÚBLICOS:
-  GET  /health                     - Health check
-  POST /api/v1/auth/register       - Registrar usuario
-  POST /api/v1/auth/login          - Iniciar sesión
-  POST /api/v1/auth/refresh        - Refrescar token
-
-PROTEGIDOS (requieren Authorization: Bearer <token>):
-  GET  /api/v1/users/profile       - Ver perfil
-  PUT  /api/v1/users/profile       - Actualizar perfil
-  GET  /api/v1/users               - Listar usuarios (paginado)
-  GET  /api/v1/users/{id}          - Ver usuario por ID
-
-USUARIOS DE PRUEBA:
-  admin@example.com / admin123
-  john@example.com  / john123
-  jane@example.com  / jane123
-  bob@example.com   / bob123
-  alice@example.com / alice123
-
-EJEMPLO DE USO:
-  1. Login:
-     curl -X POST http://localhost:8080/api/v1/auth/login \
-       -H "Content-Type: application/json" \
-       -d '{"email":"admin@example.com","password":"admin123"}'
-
-  2. Usar token:
-     curl -X GET http://localhost:8080/api/v1/users/profile \
-       -H "Authorization: Bearer <tu-token-aqui>"
-`
-
+	info := `Auth Service API`
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte(info))
 }
