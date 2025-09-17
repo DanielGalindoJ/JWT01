@@ -1,10 +1,14 @@
 package main
 
 import (
+	"net/http"
+
+	"github.com/gorilla/handlers"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 
 	"github.com/danielgalindoj/auth-service/internal/adapters/database/postgres"
+	"github.com/danielgalindoj/auth-service/internal/adapters/http/routes"
 	"github.com/danielgalindoj/auth-service/internal/config"
 	"github.com/danielgalindoj/auth-service/internal/core/services"
 )
@@ -43,19 +47,19 @@ func main() {
 	userService := services.NewUserService(userRepo)
 
 	// Crear datos de prueba
-	if err := createTestData(userService, authService); err != nil {
-		logrus.Warn("Error creando datos de prueba: ", err)
-	}
+	// if err := createTestData(userService, authService); err != nil {
+	// 	logrus.Warn("Error creando datos de prueba: ", err)
+	// }
 
 	// Configurar rutas
-	// router := routes.SetupRoutes(authService, userService, cfg)
+	router := routes.SetupRoutes(authService, userService, cfg)
 
-	// // CORS
-	// corsHandler := handlers.CORS(
-	// 	handlers.AllowedOrigins([]string{"*"}),
-	// 	handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
-	// 	handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
-	// )(router)
+	// CORS
+	corsHandler := handlers.CORS(
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
+		handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
+	)(router)
 
 	logrus.Info("🚀 Servidor corriendo en http://localhost:", cfg.Port)
 	logrus.Info("📝 Usuarios de prueba:")
@@ -63,9 +67,9 @@ func main() {
 	logrus.Info("   john@example.com / john123")
 	logrus.Info("   jane@example.com / jane123")
 
-	// if err := http.ListenAndServe(":"+cfg.Port, corsHandler); err != nil {
-	// 	logrus.Fatal("Error iniciando servidor: ", err)
-	// }
+	if err := http.ListenAndServe(":"+cfg.Port, corsHandler); err != nil {
+		logrus.Fatal("Error iniciando servidor: ", err)
+	}
 }
 
 func setupLogger(level, format string) {
@@ -80,36 +84,38 @@ func setupLogger(level, format string) {
 	}
 }
 
-func createTestData(userService *services.UserService, authService *services.AuthService) error {
-	testUsers := []struct {
-		Email     string
-		Password  string
-		FirstName string
-		LastName  string
-		Username  string
-	}{
-		{"admin@example.com", "admin123", "Admin", "User", "admin"},
-		{"john@example.com", "john123", "John", "Doe", "john"},
-		{"jane@example.com", "jane123", "Jane", "Smith", "jane"},
-		{"bob@example.com", "bob123", "Bob", "Johnson", "bob"},
-		{"alice@example.com", "alice123", "Alice", "Wilson", "alice"},
-	}
+//datos de prueba para empezar a usar la app
 
-	for _, userData := range testUsers {
-		// Verificar si el usuario ya existe
-		if _, err := userService.GetByEmail(userData.Email); err == nil {
-			continue // Usuario ya existe, saltar
-		}
+// func createTestData(userService *services.UserService, authService *services.AuthService) error {
+// 	testUsers := []struct {
+// 		Email     string
+// 		Password  string
+// 		FirstName string
+// 		LastName  string
+// 		Username  string
+// 	}{
+// 		{"admin@example.com", "admin123", "Admin", "User", "admin"},
+// 		{"john@example.com", "john123", "John", "Doe", "john"},
+// 		{"jane@example.com", "jane123", "Jane", "Smith", "jane"},
+// 		{"bob@example.com", "bob123", "Bob", "Johnson", "bob"},
+// 		{"alice@example.com", "alice123", "Alice", "Wilson", "alice"},
+// 	}
 
-		// Crear usuario
-		user, err := authService.Register(userData.Email, userData.Password, userData.FirstName, userData.LastName, userData.Username)
-		if err != nil {
-			logrus.Warn("Error creando usuario de prueba ", userData.Email, ": ", err)
-			continue
-		}
+// 	for _, userData := range testUsers {
+// 		// Verificar si el usuario ya existe
+// 		if _, err := userService.GetByEmail(userData.Email); err == nil {
+// 			continue // Usuario ya existe, saltar
+// 		}
 
-		logrus.Info("✅ Usuario de prueba creado: ", user.Email)
-	}
+// 		// Crear usuario
+// 		user, err := authService.Register(userData.Email, userData.Password, userData.FirstName, userData.LastName, userData.Username)
+// 		if err != nil {
+// 			logrus.Warn("Error creando usuario de prueba ", userData.Email, ": ", err)
+// 			continue
+// 		}
 
-	return nil
-}
+// 		logrus.Info("✅ Usuario de prueba creado: ", user.Email)
+// 	}
+
+// 	return nil
+// }
