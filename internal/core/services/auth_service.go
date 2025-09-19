@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/danielgalindoj/auth-service/internal/config"
-	"github.com/danielgalindoj/auth-service/internal/core/domain"
+	"github.com/danielgalindoj/auth-service/internal/core/domain/model"
 	"github.com/danielgalindoj/auth-service/internal/core/ports"
 	"github.com/danielgalindoj/auth-service/pkg/hash"
 	"github.com/danielgalindoj/auth-service/pkg/jwt"
@@ -26,7 +26,7 @@ func NewAuthService(userRepo ports.UserRepository, config *config.Config) *AuthS
 	}
 }
 
-func (s *AuthService) Register(email, password, firstName, lastName, username string) (*domain.User, error) {
+func (s *AuthService) Register(email, password, firstName, lastName, username string) (*model.User, error) {
 	// Verificar si el usuario ya existe
 	if _, err := s.userRepo.GetByEmail(email); err == nil {
 		return nil, fmt.Errorf("usuario con email %s ya existe", email)
@@ -46,7 +46,7 @@ func (s *AuthService) Register(email, password, firstName, lastName, username st
 	}
 
 	// Crear usuario
-	user := &domain.User{
+	user := &model.User{
 		ID:            uuid.New(),
 		Email:         email,
 		PasswordHash:  &hashedPassword,
@@ -78,7 +78,7 @@ func (s *AuthService) Register(email, password, firstName, lastName, username st
 	return user, nil
 }
 
-func (s *AuthService) Login(email, password string) (*domain.LoginResponse, error) {
+func (s *AuthService) Login(email, password string) (*model.LoginResponse, error) {
 	// Buscar usuario por email
 	user, err := s.userRepo.GetByEmail(email)
 	if err != nil {
@@ -128,7 +128,7 @@ func (s *AuthService) Login(email, password string) (*domain.LoginResponse, erro
 	// Limpiar password hash antes de retornar
 	user.PasswordHash = nil
 
-	return &domain.LoginResponse{
+	return &model.LoginResponse{
 		User:         user,
 		Token:        tokenPair.AccessToken,
 		RefreshToken: tokenPair.RefreshToken,
@@ -174,7 +174,7 @@ func (s *AuthService) RefreshToken(refreshTokenString string) (*jwt.TokenPair, e
 	return tokenPair, nil
 }
 
-func (s *AuthService) ValidateToken(tokenString string) (*domain.User, error) {
+func (s *AuthService) ValidateToken(tokenString string) (*model.User, error) {
 	claims, err := jwt.ValidateToken(tokenString, s.config.JWTSecret)
 	if err != nil {
 		return nil, err

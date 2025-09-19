@@ -1,10 +1,10 @@
-package handlers
+package service
 
 import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/danielgalindoj/auth-service/internal/core/domain"
+	"github.com/danielgalindoj/auth-service/internal/core/domain/model"
 	"github.com/danielgalindoj/auth-service/internal/core/services"
 	"github.com/sirupsen/logrus"
 )
@@ -20,7 +20,7 @@ func NewAuthHandler(authService *services.AuthService) *AuthHandler {
 }
 
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
-	var req domain.CreateUserRequest
+	var req model.CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"Invalid JSON"}`, http.StatusBadRequest)
 		return
@@ -60,14 +60,14 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(domain.UserResponse{
+	json.NewEncoder(w).Encode(model.UserResponse{
 		User:    user,
 		Message: "Usuario registrado exitosamente",
 	})
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	var req domain.LoginRequest
+	var req model.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"Invalid JSON"}`, http.StatusBadRequest)
 		return
@@ -95,7 +95,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
-	var req domain.RefreshTokenRequest
+	var req model.RefreshTokenRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"Invalid JSON"}`, http.StatusBadRequest)
 		return

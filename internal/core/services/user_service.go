@@ -3,7 +3,7 @@ package services
 import (
 	"fmt"
 
-	"github.com/danielgalindoj/auth-service/internal/core/domain"
+	"github.com/danielgalindoj/auth-service/internal/core/domain/model"
 	"github.com/danielgalindoj/auth-service/internal/core/ports"
 	"github.com/google/uuid"
 )
@@ -18,7 +18,7 @@ func NewUserService(userRepo ports.UserRepository) *UserService {
 	}
 }
 
-func (s *UserService) GetByID(id uuid.UUID) (*domain.User, error) {
+func (s *UserService) GetByID(id uuid.UUID) (*model.User, error) {
 	user, err := s.userRepo.GetByID(id)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (s *UserService) GetByID(id uuid.UUID) (*domain.User, error) {
 	return user, nil
 }
 
-func (s *UserService) GetByEmail(email string) (*domain.User, error) {
+func (s *UserService) GetByEmail(email string) (*model.User, error) {
 	user, err := s.userRepo.GetByEmail(email)
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (s *UserService) GetByEmail(email string) (*domain.User, error) {
 	return user, nil
 }
 
-func (s *UserService) List(page, limit int) ([]*domain.User, int64, error) {
+func (s *UserService) List(page, limit int) ([]*model.User, int64, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -63,7 +63,7 @@ func (s *UserService) List(page, limit int) ([]*domain.User, int64, error) {
 	return users, total, nil
 }
 
-func (s *UserService) Update(userID uuid.UUID, updates map[string]interface{}) (*domain.User, error) {
+func (s *UserService) Update(userID uuid.UUID, updates map[string]interface{}) (*model.User, error) {
 	user, err := s.userRepo.GetByID(userID)
 	if err != nil {
 		return nil, err

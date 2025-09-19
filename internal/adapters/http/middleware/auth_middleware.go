@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/danielgalindoj/auth-service/internal/core/domain"
+	"github.com/danielgalindoj/auth-service/internal/core/domain/model"
 	"github.com/danielgalindoj/auth-service/internal/core/services"
 	"github.com/sirupsen/logrus"
 )
@@ -49,7 +49,7 @@ func AuthMiddleware(authService *services.AuthService) func(http.Handler) http.H
 }
 
 // GetUserFromContext extrae el usuario del contexto
-func GetUserFromContext(r *http.Request) (*domain.User, bool) {
-	user, ok := r.Context().Value(UserContextKey).(*domain.User)
+func GetUserFromContext(r *http.Request) (*model.User, bool) {
+	user, ok := r.Context().Value(UserContextKey).(*model.User)
 	return user, ok
 }

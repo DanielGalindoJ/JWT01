@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 
-	"github.com/danielgalindoj/auth-service/internal/core/domain"
+	"github.com/danielgalindoj/auth-service/internal/core/domain/model"
 	"github.com/danielgalindoj/auth-service/internal/core/ports"
 )
 
@@ -20,7 +20,7 @@ func NewUserRepository(db *sql.DB) ports.UserRepository {
 	return &userRepository{db: db}
 }
 
-func (r *userRepository) Create(user *domain.User) error {
+func (r *userRepository) Create(user *model.User) error {
 	query := `
 		INSERT INTO users (id, email, username, password_hash, first_name, last_name, 
 			email_verified, is_active, provider, created_at, updated_at)
@@ -49,7 +49,7 @@ func (r *userRepository) Create(user *domain.User) error {
 	return nil
 }
 
-func (r *userRepository) GetByID(id uuid.UUID) (*domain.User, error) {
+func (r *userRepository) GetByID(id uuid.UUID) (*model.User, error) {
 	query := `
 		SELECT id, email, username, password_hash, first_name, last_name, 
 			avatar_url, email_verified, is_active, provider, provider_id, 
@@ -57,7 +57,7 @@ func (r *userRepository) GetByID(id uuid.UUID) (*domain.User, error) {
 		FROM users WHERE id = $1 AND is_active = true
 	`
 
-	user := &domain.User{}
+	user := &model.User{}
 	err := r.db.QueryRow(query, id).Scan(
 		&user.ID,
 		&user.Email,
@@ -85,7 +85,7 @@ func (r *userRepository) GetByID(id uuid.UUID) (*domain.User, error) {
 	return user, nil
 }
 
-func (r *userRepository) GetByEmail(email string) (*domain.User, error) {
+func (r *userRepository) GetByEmail(email string) (*model.User, error) {
 	query := `
 		SELECT id, email, username, password_hash, first_name, last_name, 
 			avatar_url, email_verified, is_active, provider, provider_id, 
@@ -93,7 +93,7 @@ func (r *userRepository) GetByEmail(email string) (*domain.User, error) {
 		FROM users WHERE email = $1 AND is_active = true
 	`
 
-	user := &domain.User{}
+	user := &model.User{}
 	err := r.db.QueryRow(query, email).Scan(
 		&user.ID,
 		&user.Email,
@@ -121,7 +121,7 @@ func (r *userRepository) GetByEmail(email string) (*domain.User, error) {
 	return user, nil
 }
 
-func (r *userRepository) GetByUsername(username string) (*domain.User, error) {
+func (r *userRepository) GetByUsername(username string) (*model.User, error) {
 	query := `
 		SELECT id, email, username, password_hash, first_name, last_name, 
 			avatar_url, email_verified, is_active, provider, provider_id, 
@@ -129,7 +129,7 @@ func (r *userRepository) GetByUsername(username string) (*domain.User, error) {
 		FROM users WHERE username = $1 AND is_active = true
 	`
 
-	user := &domain.User{}
+	user := &model.User{}
 	err := r.db.QueryRow(query, username).Scan(
 		&user.ID,
 		&user.Email,
@@ -157,7 +157,7 @@ func (r *userRepository) GetByUsername(username string) (*domain.User, error) {
 	return user, nil
 }
 
-func (r *userRepository) Update(user *domain.User) error {
+func (r *userRepository) Update(user *model.User) error {
 	query := `
 		UPDATE users SET 
 			email = $2, username = $3, password_hash = $4, first_name = $5, 
@@ -199,7 +199,7 @@ func (r *userRepository) Delete(id uuid.UUID) error {
 	return nil
 }
 
-func (r *userRepository) List(limit, offset int) ([]*domain.User, error) {
+func (r *userRepository) List(limit, offset int) ([]*model.User, error) {
 	query := `
 		SELECT id, email, username, first_name, last_name, avatar_url, 
 			email_verified, is_active, provider, last_login_at, created_at, updated_at
@@ -215,9 +215,9 @@ func (r *userRepository) List(limit, offset int) ([]*domain.User, error) {
 	}
 	defer rows.Close()
 
-	var users []*domain.User
+	var users []*model.User
 	for rows.Next() {
-		user := &domain.User{}
+		user := &model.User{}
 		err := rows.Scan(
 			&user.ID,
 			&user.Email,

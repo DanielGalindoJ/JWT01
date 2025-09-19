@@ -1,4 +1,4 @@
-package handlers
+package service
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/danielgalindoj/auth-service/internal/adapters/http/middleware"
-	"github.com/danielgalindoj/auth-service/internal/core/domain"
+	"github.com/danielgalindoj/auth-service/internal/core/domain/model"
 	"github.com/danielgalindoj/auth-service/internal/core/services"
 )
 
@@ -32,7 +32,7 @@ func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(domain.UserResponse{
+	json.NewEncoder(w).Encode(model.UserResponse{
 		User:    user,
 		Message: "Perfil del usuario",
 	})
@@ -117,7 +117,7 @@ func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(domain.UserResponse{
+	json.NewEncoder(w).Encode(model.UserResponse{
 		User:    updatedUser,
 		Message: "Perfil actualizado exitosamente",
 	})
